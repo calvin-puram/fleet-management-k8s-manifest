@@ -2,13 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mongodb
-  labels:
-    app: mongodb
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: mongodb
+  replicas: 1
   template:
     metadata:
       labels:
@@ -16,19 +14,23 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:4.0-rc-xenial
-          ports:
-            - containerPort: 27017
+          image: mongo:3.6.5-jessie
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db
+      volumes:
+        - name: mongo-persistent-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc
 ---
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
   name: fleetman-mongodb
 spec:
   selector:
     app: mongodb
   ports:
-    - protocol: TCP
+    - name: mongoport
       port: 27017
-      targetPort: 27017
   type: ClusterIP
